@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://repository:repository@db:5432/repository_insight
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: repository_insight
+      POSTGRES_USER: repository
+      POSTGRES_PASSWORD: repository
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repository -d repository_insight"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes: [repository-insight-data:/var/lib/postgresql/data]
+volumes:
+  repository-insight-data:
